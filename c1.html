@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcGIS JS API - Change Weather</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.32/"></script>
+    <style>
+        html, body, #viewDiv { height: 100%; margin: 0; padding: 0; }
+        .weather-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px;
+            border-radius: 5px;
+            display: flex;
+            gap: 8px;
+        }
+        .weather-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <div class="weather-toolbar">
+        <button class="weather-btn" onclick="setWeather('sunny')">☀️</button>
+        <button class="weather-btn" onclick="setWeather('cloudy')">☁️</button>
+        <button class="weather-btn" onclick="setWeather('foggy')">🌫️</button>
+        <button class="weather-btn" onclick="setWeather('rainy')">🌧️</button>
+        <button class="weather-btn" onclick="setWeather('snowy')">❄️</button>
+    </div>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/views/3d/environment/CloudyWeather",
+            "esri/views/3d/environment/FoggyWeather",
+            "esri/views/3d/environment/SnowyWeather",
+            "esri/views/3d/environment/RainyWeather"
+        ], function(Map, SceneView, CloudyWeather, FoggyWeather, SnowyWeather, RainyWeather) {
+
+            // Create the 3D SceneView map
+            const map = new Map({
+                basemap: "satellite",
+                ground: "world-elevation"
+            });
+
+            const view = new SceneView({
+                container: "viewDiv",
+                map: map,
+                camera: {
+                    position: { // Longitude, latitude, elevation
+                        x: 77.5946,
+                        y: 12.9716,
+                        z: 5000
+                    },
+                    tilt: 75
+                },
+                environment: {
+                    lighting: {
+                        directShadowsEnabled: true, 
+                        ambientOcclusionEnabled: true,
+                        date: new Date() // Set default to daylight
+                    },
+                    weather: new CloudyWeather({ cloudCover: 20 }) // Default weather
+                }
+            });
+
+            // Function to change weather instantly upon clicking
+            window.setWeather = function(type) {
+                if (type === "sunny") {
+                    view.environment.weather = undefined;  // Clear all weather effects
+                    view.environment.lighting = {
+                        directShadowsEnabled: true,
+                        ambientOcclusionEnabled: false,
+                        date: new Date() // Ensures bright sunlight
+                    };
+                } 
+                else if (type === "cloudy") {
+                    view.environment.weather = new CloudyWeather({ cloudCover: 80 });
+                } 
+                else if (type === "foggy") {
+                    view.environment.weather = new FoggyWeather({ fogStrength: 0.8 });
+                } 
+                else if (type === "rainy") {
+                    view.environment.weather = new RainyWeather({ cloudCover: 90, precipitation: 1.0 });
+                }
+                else if (type === "snowy") {
+                    view.environment.weather = new SnowyWeather({ cloudCover: 50, precipitation: 1.0 });
+                }
+            };
+
+            // Set default weather
+            setWeather("cloudy");
+
+        });
+    </script>
+</body>
+</html>
